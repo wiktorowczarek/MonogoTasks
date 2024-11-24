@@ -25,6 +25,9 @@ Remove the product from the cart.
 Verify that the product is no longer in the cart.
 Check if the basket count is updated correctly.
 
+Results:
+![image](https://github.com/user-attachments/assets/f0f9348b-324d-4a09-8f4f-ee28aaff9e8a)
+
 Test Case 3:
 Verify if there are any broken links or images on the product page.
 Test Steps:
