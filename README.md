@@ -1,4 +1,10 @@
 # MonogoTasks
+
+IN ORDER TO RUN TEST PLEASE TYPE IN TERMINAL:
+ npx playwright test   
+TO SHOW RESULTS:
+ npx playwright show-report 
+
 Test Case 1:
 Verify if it is possible to add a product to the cart.
 Test Steps:
