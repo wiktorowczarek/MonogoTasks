@@ -38,7 +38,7 @@ async function removeProductFromBasket(page, domain) {
   await expect(elements.basketCount).toBeHidden();
 }
 
-async function commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, domain) {
+async function openProductPage(page, baseURL, productSKU, domain) {
   // Step 1: Enter the site
   await page.goto(baseURL);
 
@@ -51,18 +51,22 @@ async function commonAddProductTestSteps(page, baseURL, productSKU, expectedTitl
   await elements.shopButton.click();
   await expect(elements.shopMenuIndicator).toBeDefined();
 
-  //Close active item (shop) submenu
+  // Close active item (shop) submenu
   const shopMenuItem = await page.locator('.navigation__item--active');
   if (await shopMenuItem.isVisible()) {
     const closeButton = shopMenuItem.locator('[data-testid="CloseShopMenu"]');
     await closeButton.click();
   }
+
   // Step 3: Open product page by SKU
   const productLocator = elements.productBySKU(productSKU);
   await productLocator.waitFor({ state: 'visible', timeout: 30000 });
-  //await expect(productLocator).toBeVisible();
   await productLocator.scrollIntoViewIfNeeded();
   await productLocator.click();
+}
+
+async function addProductToCart(page, expectedTitle, expectedPrice, domain) {
+  const elements = getProductPageElements(page, domain);
 
   // Step 4: Add product to the cart
   await elements.addToCartButton.click();
@@ -80,6 +84,42 @@ async function commonAddProductTestSteps(page, baseURL, productSKU, expectedTitl
   await verifyProductInBasket(page, expectedTitle, expectedPrice);
 }
 
+async function verifyLinksAndImages(page) {
+  // Step 1: Get all links on the page
+  const links = await page.locator('a[href]').all();
+  
+  const fullLinks = [];
+  for (let link of links) {
+    const url = await link.getAttribute('href');
+    if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+      fullLinks.push(url);
+    }
+  }
+
+  // Step 2: Verify that each full link is reachable
+  for (let url of fullLinks) {
+    const response = await page.goto(url);
+    expect(response.ok()).toBe(true);
+  }
+
+  // Step 3: Get all images on the page
+  const images = await page.locator('img').all();
+  
+  const fullImageSources = [];
+  for (let img of images) {
+    const src = await img.getAttribute('src');
+    if (src && (src.startsWith('http://') || src.startsWith('https://'))) {
+      fullImageSources.push(src);
+    }
+  }
+
+  // Step 4: Verify that each full image source is loading correctly
+  for (let src of fullImageSources) {
+    const response = await page.goto(src);
+    expect(response.ok()).toBe(true);
+  }
+}
+
 test.describe.parallel('Ploom Add Product Tests', () => {
   test(`Verify adding a product to the cart (${EnglishDomain} site)`, async ({ page }) => {
     const baseURL = BaseURLs[EnglishDomain];
@@ -87,7 +127,8 @@ test.describe.parallel('Ploom Add Product Tests', () => {
     const expectedTitle = 'Ploom X Advanced Black';
     const expectedPrice = '£10.00';
 
-    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, EnglishDomain);
+    await openProductPage(page, baseURL, productSKU, EnglishDomain);
+    await addProductToCart(page, expectedTitle, expectedPrice, EnglishDomain)
   });
 
   test(`Verify adding a product to the cart (${PolishDomain} site)`, async ({ page }) => {
@@ -96,7 +137,8 @@ test.describe.parallel('Ploom Add Product Tests', () => {
     const expectedTitle = 'Ploom X Advanced Red by Ora ïto';
     const expectedPrice = '99,00 zł';
 
-    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, PolishDomain);
+    await openProductPage(page, baseURL, productSKU, PolishDomain);
+    await addProductToCart(page, expectedTitle, expectedPrice, PolishDomain)
   });
 });
 
@@ -107,7 +149,8 @@ test.describe.parallel('Ploom Remove Product Tests', () => {
     const expectedTitle = 'Ploom X Advanced Black';
     const expectedPrice = '£10.00';
 
-    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, EnglishDomain);
+    await openProductPage(page, baseURL, productSKU, EnglishDomain);
+    await addProductToCart(page, expectedTitle, expectedPrice, EnglishDomain)
     await removeProductFromBasket(page, EnglishDomain)
   });
 
@@ -117,7 +160,26 @@ test.describe.parallel('Ploom Remove Product Tests', () => {
     const expectedTitle = 'Ploom X Advanced Red by Ora ïto';
     const expectedPrice = '99,00 zł';
 
-    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, PolishDomain);
+    await openProductPage(page, baseURL, productSKU, PolishDomain);
+    await addProductToCart(page, expectedTitle, expectedPrice, PolishDomain)
     await removeProductFromBasket(page, PolishDomain)
+  });
+});
+
+test.describe.parallel('Ploom Links Product Tests', () => {
+  test(`Verify Links and Images on product tab (${EnglishDomain} site)`, async ({ page }) => {
+    const baseURL = BaseURLs[EnglishDomain];
+    const productSKU = ProductSKUs.PloomXAdvanced;
+
+    await openProductPage(page, baseURL, productSKU, EnglishDomain);
+    await verifyLinksAndImages(page);
+  });
+
+  test(`Verify Links and Images on product tab (${PolishDomain} site)`, async ({ page }) => {
+    const baseURL = BaseURLs[PolishDomain];
+    const productSKU = ProductSKUs.PloomXAdvancedPL;
+
+    await openProductPage(page, baseURL, productSKU, PolishDomain);
+    await verifyLinksAndImages(page);
   });
 });
