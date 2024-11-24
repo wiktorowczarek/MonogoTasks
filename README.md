@@ -38,3 +38,10 @@ Open the product page by SKU (find the element with data-sku="<>" in the DOM. As
 Check all links on the product page to ensure they are not broken.
 Verify that all images on the product page load correctly.
 
+Results:
+![image](https://github.com/user-attachments/assets/0cee7504-bea1-46b7-90a1-2f36849c9a4e)
+
+
+NOTE: I did all tests only in chrome, I know ideally it should be also tested on other websites :)
+
+
