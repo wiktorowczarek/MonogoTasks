@@ -20,5 +20,6 @@ export function getBasketPageElements(page: Page) {
     getItemTitle: page.locator('.ProductMiniature-module-productName-cu7Vu'),
     getItemPrice: page.locator('[data-testid="mini-cart-list"] .FormattedPrice-module-price-eDdEl'),
     checkoutButton: page.locator('[data-testid="miniCartCheckoutButton"]'),
+    removeButton: page.locator('[data-testid="cartRemoveButton"]')
   };
 }
