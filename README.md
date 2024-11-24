@@ -11,6 +11,10 @@ Check your basket count.
 Open the basket.
 Check if the product is in the basket.
 
+Results:
+![image](https://github.com/user-attachments/assets/c10b34d1-b47a-4c7e-b75d-94586be360b9)
+![image](https://github.com/user-attachments/assets/6260cb81-06d8-40a5-b1cf-8c9c86785e44)
+
 Test Case 2:
 Verify if it is possible to remove a product from the cart.
 Precondition: A product is already in the cart.
