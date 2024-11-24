@@ -22,7 +22,23 @@ async function verifyProductInBasket(
   await expect(price).toHaveText(expectedPrice);
 }
 
-async function commonTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, domain) {
+async function removeProductFromBasket(page, domain) {
+  const basket = getBasketPageElements(page);
+  const elements = getProductPageElements(page, domain);
+
+  // Ensure the basket is visible
+  await expect(basket.basketContainer).toBeVisible();
+
+  await basket.removeButton.click();
+
+  // Wait for the product to be removed from the basket
+  await expect(basket.getItemTitle).toBeHidden();
+
+  // Verify that the basket count is updated (it should be zero)
+  await expect(elements.basketCount).toBeHidden();
+}
+
+async function commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, domain) {
   // Step 1: Enter the site
   await page.goto(baseURL);
 
@@ -43,7 +59,7 @@ async function commonTestSteps(page, baseURL, productSKU, expectedTitle, expecte
   }
   // Step 3: Open product page by SKU
   const productLocator = elements.productBySKU(productSKU);
-  await productLocator.waitFor({ state: 'visible', timeout: 60000 });
+  await productLocator.waitFor({ state: 'visible', timeout: 30000 });
   //await expect(productLocator).toBeVisible();
   await productLocator.scrollIntoViewIfNeeded();
   await productLocator.click();
@@ -64,14 +80,14 @@ async function commonTestSteps(page, baseURL, productSKU, expectedTitle, expecte
   await verifyProductInBasket(page, expectedTitle, expectedPrice);
 }
 
-test.describe.parallel('Ploom Product Tests', () => {
+test.describe.parallel('Ploom Add Product Tests', () => {
   test(`Verify adding a product to the cart (${EnglishDomain} site)`, async ({ page }) => {
     const baseURL = BaseURLs[EnglishDomain];
     const productSKU = ProductSKUs.PloomXAdvanced;
     const expectedTitle = 'Ploom X Advanced Black';
     const expectedPrice = '£10.00';
 
-    await commonTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, EnglishDomain);
+    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, EnglishDomain);
   });
 
   test(`Verify adding a product to the cart (${PolishDomain} site)`, async ({ page }) => {
@@ -80,6 +96,28 @@ test.describe.parallel('Ploom Product Tests', () => {
     const expectedTitle = 'Ploom X Advanced Red by Ora ïto';
     const expectedPrice = '99,00 zł';
 
-    await commonTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, PolishDomain);
+    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, PolishDomain);
+  });
+});
+
+test.describe.parallel('Ploom Remove Product Tests', () => {
+  test(`Verify removing a product from the cart (${EnglishDomain} site)`, async ({ page }) => {
+    const baseURL = BaseURLs[EnglishDomain];
+    const productSKU = ProductSKUs.PloomXAdvanced;
+    const expectedTitle = 'Ploom X Advanced Black';
+    const expectedPrice = '£10.00';
+
+    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, EnglishDomain);
+    await removeProductFromBasket(page, EnglishDomain)
+  });
+
+  test(`Verify removing a product from the cart (${PolishDomain} site)`, async ({ page }) => {
+    const baseURL = BaseURLs[PolishDomain];
+    const productSKU = ProductSKUs.PloomXAdvancedPL;
+    const expectedTitle = 'Ploom X Advanced Red by Ora ïto';
+    const expectedPrice = '99,00 zł';
+
+    await commonAddProductTestSteps(page, baseURL, productSKU, expectedTitle, expectedPrice, PolishDomain);
+    await removeProductFromBasket(page, PolishDomain)
   });
 });
